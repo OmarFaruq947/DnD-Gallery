@@ -43,3 +43,8 @@
 #### ✅CSS Library\_\_\_\_
 
 - [tailwind css](https://tailwindcss.com/)
+
+### Contact\_\_\_\_
+
+- [LinkedIn](https://www.linkedin.com/in/md-omar-faruq-7458b819a/)
+- omarfaruq.bauet.bd@gmail.com
