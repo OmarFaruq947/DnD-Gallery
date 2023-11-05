@@ -1,9 +1,13 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-const SortableImage = ({ id, selected, image, index, handleSelection }) => {
-
-
+const SortableImage = ({
+  id,
+  selected,
+  image,
+  index,
+  handleSelection: handleImageSelect,
+}) => {
   const sortable = useSortable({ id });
   const { attributes, listeners, setNodeRef, transform, transition } = sortable;
 
@@ -12,25 +16,27 @@ const SortableImage = ({ id, selected, image, index, handleSelection }) => {
     transition,
   };
   const inlineStyle = {
-    transformOrigin: "0 0",
+    transformOrigin: "0 0", // screen origin
     ...style,
   };
 
-  const toggleSelected = () => {
-    handleSelection(!selected, id);
+  //toggle Image section start
+  const toggleImageSelected = () => {
+    handleImageSelect(!selected, id);
   };
+  //toggle Image section end
 
   return (
     <div
       className={`border rounded-lg ${
-        index === 0 ? "col-span-2 row-span-2" : null
+        index === 0 ? "col-span-2 row-span-2" : null // first large image target
       }`}
     >
       <div
-        ref={setNodeRef}
         style={inlineStyle}
+        className={` relative group h-full`}
+        ref={setNodeRef}
         {...attributes}
-        className={` relative group h-full`} 
       >
         <div
           {...listeners}
@@ -49,14 +55,16 @@ const SortableImage = ({ id, selected, image, index, handleSelection }) => {
             }`}
           ></div>
         </div>
+        {/* checkbox on the image start */}
         <input
-          onChange={toggleSelected}
           type="checkbox"
-          className={`md:w-5 md:h-5 lg:h-6 lg:w-6 absolute top-3 left-3 lg:opacity-0 lg:group-hover:opacity-100  ${ 
-            selected ? "!opacity-100" : ""
-          }`}
+          onChange={toggleImageSelected}
           checked={selected}
+          className={`md:w-5 md:h-5 lg:h-6 lg:w-6 absolute top-3 left-3 lg:opacity-0 lg:group-hover:opacity-100  ${
+            selected ? "opacity-100" : ""
+          }`}
         />
+        {/* checkbox on the image end */}
       </div>
     </div>
   );

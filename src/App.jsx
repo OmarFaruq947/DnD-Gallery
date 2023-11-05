@@ -9,99 +9,93 @@ import {
 import {
   SortableContext,
   arrayMove,
-  rectSwappingStrategy
+  rectSwappingStrategy,
 } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import SortableImage from "./SortableImage";
-
 
 function App() {
   const [data, setData] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
-// Data load start
-useEffect(()=>{
-  try {
-    fetch("/data.json")
-    .then((res) => res?.json())
-    .then((data) => {
-      setData(data);
-    })
-  } catch (error) {
-    console.error("Data is not found", error);
-  }
-},[])
-// Data load end
+  // Data load start
+  useEffect(() => {
+    try {
+      fetch("/data.json")
+        .then((res) => res?.json())
+        .then((data) => {
+          setData(data);
+        });
+    } catch (error) {
+      console.error("Data is not found", error);
+    }
+  }, []);
+  // Data load end
 
+  // image drag & drop start
+  const handleDragAndDrop = (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      setData((items) => {
+        const oldIndex = items?.findIndex((item) => item?.id === active?.id);
+        const newIndex = items?.findIndex((item) => item?.id === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+  // image drag & drop end
 
-// image drag & drop start
-const handleDragEnd = (event) => {
-  const { active, over } = event;
-  if (active.id !== over.id) {
-    setData((items) => {
-      const preIndex = items?.findIndex((item) => item?.id === active?.id);
-      const nextIndex = items?.findIndex((item) => item?.id === over?.id);
-      return arrayMove(items, preIndex, nextIndex);
-    });
-  }
-};
-// image drag & drop end
-
-
-//image selection start
-  const handleSelectionChange = (isSelected, imageId) => {
-    setSelectedImages((prevSelected) => {
+  //image selection start
+  const handleImageSelect = (isSelected, imageId) => {
+    setSelectedImages((previousSelectedImage) => {
       if (isSelected) {
-        return [...prevSelected, imageId];
+        return [...previousSelectedImage, imageId];
       } else {
-        return prevSelected?.filter((image) => image !== imageId);
+        return previousSelectedImage?.filter((image) => image !== imageId);
       }
     });
   };
-//image selection end
-
+  //image selection end
 
   //delete image section start
-  const handleDelete = () => {
+  const handleSelectedImageDelete = () => {
     setData(data?.filter((imgData) => !selectedImages?.includes(imgData?.id)));
     setSelectedImages([]);
-    toast.error("Image Deleted succesfully");
-    
+    toast.success("Image Deleted successfully");
   };
   //delete image section end
 
-
   //unselect image function start
-  const handleUncheckAll = () => {
+  const handleUnselectedAllImages = () => {
     setSelectedImages([]);
-    toast.error("All images DeSelected");
+    toast.success("Unselected all images successfully");
   };
-   //unselect image function start
-
-
+  //unselect image function start
 
   //image upload function start
-  const handleUpload = (event) => {
+  const handleImageUpload = (event) => {
     const files = event.target.files;
     const newImageData = Array.from(files).map((file, index) => ({
-      id: data.length + index + 1, // Generate a unique ID for image
-      imageURL: URL.createObjectURL(file),
+      id: data.length + index + 1, // new ID create for each image
+      imageURL: URL.createObjectURL(file), // new url for uploaded image
     }));
-    setData((prevData) => [...prevData, ...newImageData]);
-    toast.success("Image uploaded succesfully");
+    setData((previousData) => [...previousData, ...newImageData]);
+    toast.success("yes, Image uploaded successfully");
   };
   //image upload function end
 
-
-
   return (
     <>
-      <Toaster position="top-center" autoClose={5000}></Toaster>
+      <Toaster
+        position="bottom-right"
+        reverseOrder={true}
+        autoClose={5000}
+      ></Toaster>
       <div className="flex justify-center max-h-screen  w-full">
         <div className="bg-white">
-          <div className="flex justify-between mx-8 py-3">
+          <div className="flex justify-between mx-8 py-3 border border-b-gray-200 border-r-0 border-l-0">
             <h1 className="font-bold text-xl">Gallery</h1>
             {selectedImages?.length > 0 ? (
               <h1 className="flex items-center font-bold">
@@ -109,7 +103,7 @@ const handleDragEnd = (event) => {
                   <input
                     type="checkbox"
                     checked={selectedImages?.length > 0}
-                    onChange={handleUncheckAll}
+                    onChange={handleUnselectedAllImages}
                   />
                 </span>{" "}
                 <span className="mr-1">({selectedImages?.length})</span>
@@ -121,7 +115,7 @@ const handleDragEnd = (event) => {
 
             {selectedImages?.length > 0 && (
               <button
-                onClick={handleDelete}
+                onClick={handleSelectedImageDelete}
                 className="font-bold text-sx border border-red-500 bg-red-100 px-2 py-2 rounded-sm"
               >
                 {selectedImages?.length > 1 ? (
@@ -132,40 +126,52 @@ const handleDragEnd = (event) => {
               </button>
             )}
           </div>
-          <hr />
+
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+            onDragEnd={handleDragAndDrop}
           >
             <SortableContext items={data} strategy={rectSwappingStrategy}>
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 p-6">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-6">
                 {data.map((imgData, index) => (
                   <SortableImage
                     key={imgData?.id}
                     id={imgData?.id}
                     image={imgData?.imageURL}
                     index={index}
-                    handleSelection={handleSelectionChange}
+                    handleSelection={handleImageSelect}
                     selected={selectedImages.includes(imgData?.id)}
                   />
                 ))}
-                <div className="w-auto h-auto border-2 border-dashed text-center">
+                <div className="w-auto h-auto  bg-gray-100 hover:bg-gray-50 border-2 border-dashed text-center">
                   <label className="inset-0 cursor-pointer">
                     <input
                       type="file"
                       className="hidden"
                       accept="image/*"
                       multiple
-                      onChange={handleUpload}
+                      onChange={handleImageUpload}
                     />
-                    <div className="flex flex-col items-center justify-center h-full  ">
-                      <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Picture_icon_BLACK.svg"
-                        alt=""
-                        className="w-4 h-4 mb-3"
-                      />
-                      <p className="font-semibold text-xs lg:text-base">
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <svg
+                        className="text-gray-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="30"
+                        height="30"
+                        viewBox="0 0 512 512"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M336 72V40H40v432h432V184h-32v25.68l-64.769-64.77L306 214.142l-100-100l-134 134V72Zm39.231 118.166L440 254.935v93.207L328.628 236.769ZM206 159.4l234 234V440H72V293.4Z"
+                        />
+                        <path
+                          fill="currentColor"
+                          d="M448 16h-32v48h-48v32h48v48h32V96h48V64h-48V16z"
+                        />
+                      </svg>
+
+                      <p className="font-bold underline text-xs text-gray-600 lg:text-base">
                         Add Images
                       </p>
                     </div>

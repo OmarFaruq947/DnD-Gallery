@@ -4,6 +4,16 @@
 
 # ✔ [Live-Link](https://dn-d-gallery-4zyl.vercel.app/)
 
+#### ✅How to Run this Project\_\_\_\_
+
+###### step-1: clone this repository
+
+###### step-2: run the "npm i" for install node package manager
+
+###### step-1: run the " npm run dev " in the VS-code terminal.
+
+.
+
 #### ✅List of Key features of this Drag & drop Gallery\_\_\_\_
 
 - Single & Multiple Image Upload within drag and drop.
